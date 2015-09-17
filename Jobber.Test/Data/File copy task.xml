@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job id="43B7FCF7-9156-462D-AB00-887C4B984294">
+  <name>Copy a local file</name>
+  <description>
+    <![CDATA[
+    Free text description of the system.
+  ]]>
+  </description>
+  <tags>VAFNovaALL</tags>
+
+  <trigger id="038E10AA-DC20-438C-9125-B72A9947E7B7" service="Jobber.Scheduler.Cron.Generic, Jobber">
+    <options>
+      <pattern>10 * * * *</pattern>
+    </options>
+    <events on="execute">
+      <runtask id="4CEE7D37-EA61-4DB8-89FF-639C8D376DFB" />
+    </events>
+  </trigger>
+
+  <task id="4CEE7D37-EA61-4DB8-89FF-639C8D376DFB" service="Jobber.Transfers.File.Generic, Jobber">
+    <name>Copy local files to archive</name>
+    <description>
+      <![CDATA[
+      Free text description of the system.
+    ]]>
+    </description>
+    <options>
+      <action>copy</action>
+      <source>c:\temp</source>
+      <destination>c:\temp\old</destination>
+      <pattern>*.csv</pattern>
+    </options>
+    <events on="success">
+      <runtask id="4FA4DB60-A24E-427D-A3C3-E2EF1A2DEDFF" />
+    </events>
+    <events on="failure">
+      <runtask id="D74607D6-C033-49FA-A488-06E4D93C25E3" />
+    </events>
+  </task>
+
+  <task id="4FA4DB60-A24E-427D-A3C3-E2EF1A2DEDFF" service="Jobber.Transfers.Email.Generic, Jobber">
+    <options>
+      <recipients>
+        <to>bjorn.nordblom@arvato.com</to>
+      </recipients>
+      <message>
+        <![CDATA[
+        Copied {count(/result/files)} from {/options/source} to {/options/destination}.
+      ]]>
+      </message>
+      <attachments></attachments>
+    </options>
+  </task>
+
+  <task id="D74607D6-C033-49FA-A488-06E4D93C25E3" service="Jobber.Transfers.Email.Generic, Jobber">
+    <options>
+      <recipients>
+        <to>bjorn.nordblom@arvato.com</to>
+        <cc>novareports.se@arvato.com</cc>
+      </recipients>
+      <message>
+        <![CDATA[
+        Error on copying files from {/options/source} to {/options/destination}:
+        {/exception/message}
+      ]]>
+      </message>
+      <attachments></attachments>
+    </options>
+  </task>
+</job>
